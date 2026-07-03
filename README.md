@@ -5,8 +5,8 @@ Bot de Telegram conversacional con IA — proyecto de aprendizaje por fases.
 ## Fases del proyecto
 
 - [x] **Fase 0** — Setup del bot y del entorno
-- [x] **Fase 1** — Bot "eco" funcionando (este commit)
-- [ ] **Fase 2** — Conectar la respuesta a la API de Claude
+- [x] **Fase 1** — Bot "eco" funcionando
+- [x] **Fase 2** — Conectar la respuesta a la API de Claude (este commit)
 - [ ] **Fase 3** — Memoria de conversación
 - [ ] **Fase 4** — Primer "poder" (recordatorios / notas / consulta de datos)
 - [ ] **Fase 5** — Entrada/salida por audio (speech-to-text / text-to-speech)
@@ -39,7 +39,12 @@ Bot de Telegram conversacional con IA — proyecto de aprendizaje por fases.
 
 5. Andá a Telegram, abrí tu bot y mandale `/start` o cualquier mensaje de texto.
 
-## Estado actual (Fase 1)
+## Estado actual (Fase 2)
 
-El bot responde repitiendo cualquier mensaje de texto que le mandes.
-Todavía no está conectado a ninguna IA — eso es la Fase 2.
+El bot manda cada mensaje de texto a la API de Claude y responde con lo
+que la IA generó. Todavía **no tiene memoria**: cada mensaje se procesa
+de forma independiente, sin contexto de mensajes anteriores. Eso es
+la Fase 3.
+
+Necesitás tener `ANTHROPIC_API_KEY` completo en tu `.env` para que
+esta fase funcione.
