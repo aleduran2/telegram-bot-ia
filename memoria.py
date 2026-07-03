@@ -27,7 +27,7 @@ def _conexion():
 
 
 def inicializar_db() -> None:
-    """Crea la tabla de mensajes si no existe. Se llama una vez al arrancar."""
+    """Crea las tablas si no existen. Se llama una vez al arrancar."""
     with _conexion() as conn:
         conn.execute(
             """
@@ -42,6 +42,19 @@ def inicializar_db() -> None:
         )
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_mensajes_chat_id ON mensajes (chat_id)"
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS notas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                chat_id INTEGER NOT NULL,
+                contenido TEXT NOT NULL,
+                creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_notas_chat_id ON notas (chat_id)"
         )
 
 
@@ -82,3 +95,44 @@ def borrar_historial(chat_id: int) -> None:
     """Borra toda la conversación de un chat (por ejemplo, con /reset)."""
     with _conexion() as conn:
         conn.execute("DELETE FROM mensajes WHERE chat_id = ?", (chat_id,))
+
+
+# --- Notas rápidas (Fase 4) ---
+
+def guardar_nota(chat_id: int, contenido: str) -> int:
+    """Guarda una nota nueva y devuelve su id."""
+    with _conexion() as conn:
+        cursor = conn.execute(
+            "INSERT INTO notas (chat_id, contenido) VALUES (?, ?)",
+            (chat_id, contenido),
+        )
+        return cursor.lastrowid
+
+
+def listar_notas(chat_id: int) -> list[dict]:
+    """Devuelve todas las notas de ese chat, más nuevas primero."""
+    with _conexion() as conn:
+        cursor = conn.execute(
+            """
+            SELECT id, contenido, creado_en FROM notas
+            WHERE chat_id = ?
+            ORDER BY id DESC
+            """,
+            (chat_id,),
+        )
+        filas = cursor.fetchall()
+
+    return [
+        {"id": id_, "contenido": contenido, "creado_en": creado_en}
+        for id_, contenido, creado_en in filas
+    ]
+
+
+def borrar_nota(chat_id: int, nota_id: int) -> bool:
+    """Borra una nota puntual por id. Devuelve True si existía y se borró."""
+    with _conexion() as conn:
+        cursor = conn.execute(
+            "DELETE FROM notas WHERE chat_id = ? AND id = ?",
+            (chat_id, nota_id),
+        )
+        return cursor.rowcount > 0
